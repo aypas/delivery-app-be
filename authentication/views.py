@@ -6,7 +6,15 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from authentication.serializers import UserMetaSerializer as US 
 from django.contrib.auth import get_user_model
-#from rest_framework_simplejwt.authentication import JWTAuthentication as i
+
+from rest_framework.decorators import api_view, throttle_classes
+
+
+@api_view(["POST"])
+def SignUp(request):
+
+	print(request.data)
+	return Response({'kaka': "poopoo"})
 
 
 class User(APIView):

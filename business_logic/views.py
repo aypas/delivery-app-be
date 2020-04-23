@@ -63,7 +63,7 @@ class OrderView(APIView):
 		return Order.objects.all()
 
 	def get(self, request):
-		print(self.get_data(request))
+		print(request.META)
 		serializer = OS(self.get_data(request), many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 

@@ -10,6 +10,7 @@ class Node(models.Model):
 	#to many to many
 	managers = models.ManyToManyField(CustomUser, related_name='managers', limit_choices_to={'is_manager': True},) 
 	address = models.CharField(max_length=255)
+	code = models.IntegerField()
 
 	#oauth = JSONField(blank=True, null=True)
 
