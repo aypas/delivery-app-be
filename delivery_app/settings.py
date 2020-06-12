@@ -12,6 +12,12 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
+from pathlib import Path
+
+
+load_dotenv()
+load_dotenv(dotenv_path=Path('.'))
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -26,8 +32,9 @@ SECRET_KEY = ')l4&r2!ec)vyt$@pm79(a46lbvqa9#0kjrm+20e4g!9et)qfux'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+#ALLOWED_HOSTS = [os.environ['HOST1'], os.environ['HOST2']] if bool(os.environ['prod']) else ["penguin.linux.test"]
+ALLOWED_HOSTS = ['161.35.62.193']
+print(ALLOWED_HOSTS)
 
 # Application definition
 
@@ -76,7 +83,7 @@ SIMPLE_JWT = {
 }
 
 CSRF_COOKIE_NAME = 'csrftoken'
-CSRF_TRUSTED_ORIGINS = ['127.0.0.1:8080/',]
+CSRF_TRUSTED_ORIGINS = [os.environ['TRUSTED_ORIGIN'],]
 
 CORS_ORIGIN_ALLOW_ALL = True   #remove in production
 CORS_ALLOW_CREDENTIALS = True  #remove in production
@@ -114,8 +121,12 @@ WSGI_APPLICATION = 'delivery_app.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ['DB_USERNAME'],
+        'USER': os.environ['DB_USERNAME'],
+        'PASSWORD': os.environ['DB_PASS'],
+        'HOST': 'raja.db.elephantsql.com',
+        'PORT': '5432'
     }
 }
 

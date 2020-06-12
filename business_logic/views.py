@@ -4,7 +4,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from .QStringParsers import OrderViewQString
+
 from django.db.models import Count, Case, When, IntegerField
 from django.contrib.auth import get_user_model
 

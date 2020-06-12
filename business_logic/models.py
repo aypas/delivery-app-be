@@ -2,17 +2,16 @@ from django.db import models
 #from django.contrib.postgres.fields import JSONField
 from authentication.models import CustomUser
 from business_logic.misc import timezone #fucked
+from django.contrib.postgres.fields import JSONField
 
 
 class Node(models.Model):
 
-	owner = models.OneToOneField(CustomUser, null=True, related_name='owner', on_delete=models.SET_NULL)#change this
-	#to many to many
+	owner = models.OneToOneField(CustomUser, null=True, related_name='owner', on_delete=models.SET_NULL)
 	managers = models.ManyToManyField(CustomUser, related_name='managers', limit_choices_to={'is_manager': True},) 
 	address = models.CharField(max_length=255)
 	code = models.IntegerField()
-
-	#oauth = JSONField(blank=True, null=True)
+	oauth = JSONField(blank=True, null=True)
 
 
 	def __str__(self):

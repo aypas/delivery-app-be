@@ -13,3 +13,8 @@ class UserSimpleNestedSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = CustomUser
 		fields = ['id', 'name']
+
+class UserSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = CustomUser
+		fields = '__all__'
