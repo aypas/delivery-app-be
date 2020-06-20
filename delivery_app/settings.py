@@ -32,8 +32,7 @@ SECRET_KEY = ')l4&r2!ec)vyt$@pm79(a46lbvqa9#0kjrm+20e4g!9et)qfux'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#ALLOWED_HOSTS = [os.environ['HOST1'], os.environ['HOST2']] if bool(os.environ['prod']) else ["penguin.linux.test"]
-ALLOWED_HOSTS = ['161.35.62.193']
+ALLOWED_HOSTS = [os.environ['HOST1'], os.environ['HOST2']] if bool(os.environ['prod']) else ["*"]
 print(ALLOWED_HOSTS)
 
 # Application definition
@@ -77,9 +76,9 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=180),
     'AUTH_HEADER_TYPES': ('JWT',),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=30)
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=200)
 }
 
 CSRF_COOKIE_NAME = 'csrftoken'
@@ -167,3 +166,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, '/static')

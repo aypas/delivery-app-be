@@ -17,6 +17,7 @@ class CustomUser(AbstractUser):
 	on_shift = models.BooleanField(default=False)
 	is_manager = models.BooleanField(default=False)
 	is_node_owner = models.BooleanField(default=False)
+	of_node = models.ManyToManyField('business_logic.Node')
 
 	USERNAME_FIELD = 'email'
 	REQUIRED_FIELDS = []

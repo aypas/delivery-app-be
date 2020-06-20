@@ -1,27 +1,29 @@
 from django.db import models
-#from django.contrib.postgres.fields import JSONField
 from authentication.models import CustomUser
 from business_logic.misc import timezone #fucked
 from django.contrib.postgres.fields import JSONField
 
 
 class Node(models.Model):
-
-	owner = models.OneToOneField(CustomUser, null=True, related_name='owner', on_delete=models.SET_NULL)
-	managers = models.ManyToManyField(CustomUser, related_name='managers', limit_choices_to={'is_manager': True},) 
+	#on node creation, owner must be added to co_owners as well...
+	name = models.CharField(max_length=30, blank=True)
+	owner = models.OneToOneField(CustomUser, related_name='owner', on_delete=models.PROTECT)
+	co_owners = models.ManyToManyField(CustomUser, related_name='owners')
+	managers = models.ManyToManyField(CustomUser, related_name='managers', limit_choices_to={'is_manager': True},)
+	workers = models.ManyToManyField(CustomUser, related_name='workers') 
 	address = models.CharField(max_length=255)
 	code = models.IntegerField()
 	oauth = JSONField(blank=True, null=True)
 
 
 	def __str__(self):
-		return self.owner.email
+		return self.name
 
 
 
 class Partner(models.Model):
 
-	of_node_partner = models.ForeignKey(Node, null=True, on_delete=models.SET_NULL) #change name holy s!
+	of_node = models.ForeignKey(Node, null=True, on_delete=models.SET_NULL) #change name holy s!
 	name = models.CharField(max_length=255)
 	street_address = models.CharField(max_length=255)
 	active = models.BooleanField(default=True)
@@ -60,5 +62,3 @@ class Order(models.Model):
 
 	def __str__(self):
 		return self.store.name
-# i still haven't converted timezone perfectly yet...need to fix it
-#problem, date_today_aware() is slightly ahead, if an order is made around 8, it wont show under today...

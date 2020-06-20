@@ -2,25 +2,48 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.decorators import api_view, throttle_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, throttle_classes, permission_classes
 
-from authentication.serializers import UserMetaSerializer as US, UserSerializer
 
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 
 from authentication.misc import flow
+from authentication.permissions import IsNodeOwnerOrManager, IsSoleNodeOwner
+from authentication.serializers import UserMetaSerializer as US, UserSerializer
 
-@api_view(["POST"])
-def SignUp(request):
-	us = UserSerializer(data=request.data)
-	if err:=us.is_valid():
-		us.save()
-		return Response({"status": status.HTTP_200_OK})
-	print(r)
-	return Response({"status": status.HTTP_400_BAD_REQUEST, "error": err})
+from business_logic.models import Node
+
+#needs User for owner/manager
+#needs User for self
+#needs Users for owner/manager
+#needs Users for self---maybe
+
+#thats it...
+
+
+
+class SignUp(APIView):
+
+	def get_object(self, code):
+		try:
+			return Node.objects.get(code=code).pk
+
+		except:
+			return false
+	def post(self, request):
+		model = get_user_model()(name=request.data.get('name'),
+							   email=request.data.get('email'))
+
+		node = self.get_object(request.data.get('code'))
+		if node:
+			model.set_password(request.data.get('password'))
+			model.save()
+			model.of_node.add(node)
+			return Response({"status": status.HTTP_200_OK, "data": US(model).data})
+		return Response({"status": status.HTTP_400_BAD_REQUEST, "error": us.errors})
 
 
 class User(APIView):
@@ -33,38 +56,43 @@ class User(APIView):
 			return get_user_model().objects.get(email=email)
 
 		except Exception as e:
-			print(e)#bad!!!
-
+			return e
 	def get(self, request):
-		print(request.META)
 		serializer = US(self.get_object(email=request.user))
 		return Response(serializer.data)
 
-	def post(self, request):
-		pass
-
 	def put(self, request):
-		pass
+		obj = self.get_object(request.user)
+		data = US(obj, data=request.data, partial=True)
+		if data.is_valid():
+			data.save()
+			return Response({"status": status.HTTP_200_OK, "data": data.data})
+		return Response({"status": status.HTTP_400_BAD_REQUEST, "error": data.errors})
 
-	def delete(self, request):
-		pass
 
 
+class UsersOfNode(APIView):
+	permission_classes = [IsAuthenticated, IsNodeOwnerOrManager]
+	#should serve users of requestor's node
 
-class Users(APIView):
-	permissions_classes = [IsAuthenticated,]
-
-	def get_objects(self, **parameters):
-		print(parameters)
-		return get_user_model().objects.all()
-
-	def get(self, request):
-		print(request)
-		print(request.GET, type(request.GET),request.GET.__dict__)
-		serializer = US(self.get_objects(**request.GET.__dict__), many=True)
-		return Response(serializer.data)
+	def get(self, request, cflow, nodePk):
+		cflow = cflow.lower()
+		if cflow == "owners":
+			users = Node.objects.get(pk=nodePk).co_owners.all()
+			print('hello?')
+			serial = US(users, many=True)
+			return Response({'data': serial.data, 'status': status.HTTP_200_OK})
+		elif cflow == "managers":
+			serial = US(Node.objects.get(pk=nodePk).managers.all(), many=True)
+			return Response({'data': serial.data, 'status': status.HTTP_200_OK})
+		elif cflow == "workers":
+			serial = US(Node.objects.get(pk=nodePk).workers.all(), many=True)
+			return Response({'data': serial.data, 'status': status.HTTP_200_OK})
+		else:
+			return Response({"status": status.HTTP_404_NOT_FOUND})
 		
 @api_view(["GET"])
+@permission_classes([IsSoleNodeOwner])
 def init(request):
 	url, _ = flow.authorization_url(
 
@@ -80,35 +108,31 @@ def init(request):
 def oauth2callback(request):
 
 	try:
-		user = Node.objects.get(managers__user__email=request.user)
-
 		auth_code = request.GET.get('code')
-
 		print(request.GET.get('state'))
-
 		flow = flow.fetch_token(code=auth_code)
-		
 		creds = flow.credentials
-
 		if not creds.refresh_token:
 			print( '''Something went wrong. We need you to delete any permissions
 											you\'ve given us and try again''')
-			return Response({'status': 'fail'})
+			return Response({'status': 'fail', 
+							'detail': 'something went wrong on google\'s end. Please try again.'})
 
-		user.oauth = {
-					  'scopes': creds.scopes, 
-					  'client_secret': creds.client_secret,
-					  'token_uri': creds.token_uri,
-					  'id_token': creds.id_token,
-					  'client_id': creds.client_id,
-					  'token': creds.token,
-					  'refresh_token': creds.refresh_token
-					  										}
+		oauth = {
+				  'scopes': creds.scopes, 
+				  'client_secret': creds.client_secret,
+				  'token_uri': creds.token_uri,
+				  'id_token': creds.id_token,
+				  'client_id': creds.client_id,
+				  'token': creds.token,
+				  'refresh_token': creds.refresh_token
+				  										}
 
-
+		node = Node.objects.filter(owner__email=request.user).update(oauth=oauth)
 		print(user.oauth)
 		user.save()
-		return Response({'status': 'success'})
+		return HttpResponseRedirect("http://a-delivery.tk/dashboard?success/")
+		#redirect(a-delivery.tk/success...)
 
 	except Exception as e:
 		print(e)
