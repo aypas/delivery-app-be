@@ -44,9 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-
-    'corsheaders',#remove in production alongside all cors settings!!!
+    'corsheaders',
     'rest_framework',
     'authentication',
     'business_logic',

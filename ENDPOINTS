@@ -1,8 +1,0 @@
-models: order -> store -> node -> auth
-ep:
-	order: order/pk, orders with qString
-	store: store/pk, orders of store with qString
-	node: node/pk, stores of nodes, orders of node, users of node
-	auth: user, users(from whichever node the call is made for),  , orders of user, nodes of user
-
- 

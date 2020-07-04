@@ -1,19 +1,21 @@
 from django.db import models
 from authentication.models import CustomUser
 from business_logic.misc import timezone #fucked
-from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.fields import JSONField, ArrayField
 
 
 class Node(models.Model):
 	#on node creation, owner must be added to co_owners as well...
 	name = models.CharField(max_length=30, blank=True)
-	owner = models.OneToOneField(CustomUser, related_name='owner', on_delete=models.PROTECT)
+	owner = models.ForeignKey(CustomUser, related_name='owner', on_delete=models.PROTECT)
+	email = models.EmailField(unique=True)
 	co_owners = models.ManyToManyField(CustomUser, related_name='owners')
 	managers = models.ManyToManyField(CustomUser, related_name='managers', limit_choices_to={'is_manager': True},)
 	workers = models.ManyToManyField(CustomUser, related_name='workers') 
 	address = models.CharField(max_length=255)
-	code = models.IntegerField()
+	code = models.CharField(max_length=10)
 	oauth = JSONField(blank=True, null=True)
+	active = models.BooleanField(default=True)
 
 
 	def __str__(self):
@@ -23,11 +25,13 @@ class Node(models.Model):
 
 class Partner(models.Model):
 
-	of_node = models.ForeignKey(Node, null=True, on_delete=models.SET_NULL) #change name holy s!
+	of_node = models.ForeignKey(Node, on_delete=models.PROTECT) #change name holy s!
 	name = models.CharField(max_length=255)
 	street_address = models.CharField(max_length=255)
 	active = models.BooleanField(default=True)
 	email = models.EmailField(blank=True)#not sure if emailfield is needed, not sure if itll match a string tbh
+	active = models.BooleanField(default=True)
+	other_names = ArrayField(models.CharField(max_length=50), blank=True, null=True)
 
 	def __str__(self):
 		return self.name

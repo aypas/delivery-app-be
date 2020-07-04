@@ -53,15 +53,11 @@ def order(n):
 			continue
 
 def partner(n):
-	f=Node.objects.all().count()
 	faker = Faker()
-
-	if not f:
-		raise Exception("must create at least one node before you can create a partner")
 
 	for _ in range(n):
 		try:
-			Partner.objects.create(of_node_partner=Node.objects.all()[random.choice(range(0,f))],
+			Partner.objects.create(of_node_id=9,
 						   name = faker.company(),
 						   street_address=faker.address())
 		except Exception as e:

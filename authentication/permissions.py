@@ -1,6 +1,5 @@
 from rest_framework import permissions
-from .models import CustomUser
-
+from authentication.models import CustomUser
 class IsNodeOwnerOrManager(permissions.BasePermission):
 	def has_permission(self, request, view):
 		print('IsNodeOwnerOrManager has run')

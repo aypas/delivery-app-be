@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, throttle_classes, permission_classes
 
 
+from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
@@ -16,12 +17,9 @@ from authentication.serializers import UserMetaSerializer as US, UserSerializer
 
 from business_logic.models import Node
 
-#needs User for owner/manager
-#needs User for self
-#needs Users for owner/manager
-#needs Users for self---maybe
-
-#thats it...
+#every single error message needs to respond with {"status" 4.., "detail": "something" }
+#which amounts to Response({"detail": "thing"}, status=HTTP_4...)
+#catch on axios with error.response 
 
 
 
@@ -32,18 +30,34 @@ class SignUp(APIView):
 			return Node.objects.get(code=code).pk
 
 		except:
-			return false
+			return False
 	def post(self, request):
-		model = get_user_model()(name=request.data.get('name'),
-							   email=request.data.get('email'))
-
-		node = self.get_object(request.data.get('code'))
-		if node:
+		model = get_user_model()(name=request.data.get('name'), email=request.data.get('email'))
+		code = request.data.get('code', None)
+		print(request.data)
+		if code == 123456:
+			model.is_node_owner = True
+			model.is_manager = True
 			model.set_password(request.data.get('password'))
-			model.save()
-			model.of_node.add(node)
-			return Response({"status": status.HTTP_200_OK, "data": US(model).data})
-		return Response({"status": status.HTTP_400_BAD_REQUEST, "error": us.errors})
+
+			try:
+				model.save()
+				return Response(US(model).data, status=status.HTTP_200_OK)
+			except IntegrityError as e:
+				return Response({"detail": "an account with that email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+		else:
+			node = self.get_object(code)
+			if not node:
+				return Response({"detail": 'the provided code is not valid for any business on our system'},
+								status=status.HTTP_400_BAD_REQUEST)
+			model.set_password(request.data.get('password'))
+
+			try:
+				model.save()
+				model.of_node.add(node)
+				return Response({"data": US(model).data}, status=status.HTTP_200_OK)
+			except IntegrityError as e:
+				return Response({"detail": "an account with that email already exists"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class User(APIView):
@@ -66,8 +80,8 @@ class User(APIView):
 		data = US(obj, data=request.data, partial=True)
 		if data.is_valid():
 			data.save()
-			return Response({"status": status.HTTP_200_OK, "data": data.data})
-		return Response({"status": status.HTTP_400_BAD_REQUEST, "error": data.errors})
+			return Response(data.data, status=status.HTTP_200_OK)
+		return Response({"detail": data.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -81,42 +95,42 @@ class UsersOfNode(APIView):
 			users = Node.objects.get(pk=nodePk).co_owners.all()
 			print('hello?')
 			serial = US(users, many=True)
-			return Response({'data': serial.data, 'status': status.HTTP_200_OK})
+			return Response({'data': serial.data}, status=status.HTTP_200_OK)
 		elif cflow == "managers":
 			serial = US(Node.objects.get(pk=nodePk).managers.all(), many=True)
-			return Response({'data': serial.data, 'status': status.HTTP_200_OK})
+			return Response({'data': serial.data},status=status.HTTP_200_OK)
 		elif cflow == "workers":
 			serial = US(Node.objects.get(pk=nodePk).workers.all(), many=True)
-			return Response({'data': serial.data, 'status': status.HTTP_200_OK})
+			return Response({'data': serial.data}, status=status.HTTP_200_OK)
 		else:
-			return Response({"status": status.HTTP_404_NOT_FOUND})
+			return Response({"detail": f"trailing /{cflow} is not valid"}, status=status.HTTP_404_NOT_FOUND)
 		
 @api_view(["GET"])
 @permission_classes([IsSoleNodeOwner])
 def init(request):
 	url, _ = flow.authorization_url(
-
 				access_type='offline',
 			    # Enable incremental authorization. Recommended as a best practice.
-			    include_granted_scopes='true'
-
-		)
+			    include_granted_scopes='true')
 	
-	return Response({ 'url': url})
+	return Response({ 'url': url}, status=status.HTTP_200_OK)
+
+
 
 @api_view(["GET", "POST"])
-def oauth2callback(request):
-
+def Oauth2Callback(request):
+	#if fail, instuct user to to https://myaccount.google.com/permissions,
+	#delete any granted permission, and try again
 	try:
 		auth_code = request.GET.get('code')
-		print(request.GET.get('state'))
-		flow = flow.fetch_token(code=auth_code)
-		creds = flow.credentials
+		print(request.GET.get('state'), 'is it working?')
+		fl = flow.fetch_token(code=auth_code)
+		creds = fl.credentials
 		if not creds.refresh_token:
 			print( '''Something went wrong. We need you to delete any permissions
 											you\'ve given us and try again''')
-			return Response({'status': 'fail', 
-							'detail': 'something went wrong on google\'s end. Please try again.'})
+			return Response({'detail': 'something went wrong on google\'s end. Please try again.'},
+							status=status.HTTP_400_BAD_REQUEST)#change to apropriate code
 
 		oauth = {
 				  'scopes': creds.scopes, 
@@ -131,11 +145,10 @@ def oauth2callback(request):
 		node = Node.objects.filter(owner__email=request.user).update(oauth=oauth)
 		print(user.oauth)
 		user.save()
-		return HttpResponseRedirect("http://a-delivery.tk/dashboard?success/")
-		#redirect(a-delivery.tk/success...)
+		return Response({"data": "succesfully linked your gmail account"}, status=status.HTTP_200_OK)
 
 	except Exception as e:
 		print(e)
-		return Response({'status': 'fail'})
+		return Response({'detail': 'fail'}, status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -1,10 +1,12 @@
 from rest_framework import serializers
-from authentication.serializers import UserMetaSerializer, UserSimpleNestedSerializer
+from authentication.serializers import UserMetaSerializer, UserSimpleNestedSerializer, UserSerializer
 from .models import Node, Partner, Order
 
 class NodeSerializer(serializers.ModelSerializer):
-	managers = UserMetaSerializer(many=True, read_only=True)
-	owner = UserMetaSerializer(read_only=True)
+	owner = UserSerializer(read_only=True)
+	managers = UserSerializer(many=True, read_only=True)
+	co_owners = UserSerializer(many=True, read_only=True)
+	workers = UserSerializer(many=True, read_only=True)
 	class Meta:
 		model = Node
 		fields = "__all__"
