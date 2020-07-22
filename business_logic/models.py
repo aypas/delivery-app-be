@@ -2,7 +2,7 @@ from django.db import models
 from authentication.models import CustomUser
 from business_logic.misc import timezone #fucked
 from django.contrib.postgres.fields import JSONField, ArrayField
-
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Node(models.Model):
 	#on node creation, owner must be added to co_owners as well...
@@ -17,11 +17,8 @@ class Node(models.Model):
 	oauth = JSONField(blank=True, null=True)
 	active = models.BooleanField(default=True)
 
-
 	def __str__(self):
 		return self.name
-
-
 
 class Partner(models.Model):
 
@@ -45,7 +42,6 @@ class Order(models.Model):
 
 
 	html = models.TextField(blank=True)
-	result = models.CharField(blank=True, max_length=20)
 	source = models.CharField(max_length=30, blank=True)
 	customer_phone=models.CharField(max_length=30)
 	order_number = models.CharField(max_length=200, unique=True)
@@ -62,6 +58,11 @@ class Order(models.Model):
 	complete = models.BooleanField(default=False)
 	completed_time = models.DateTimeField(blank=True, null=True)
 
+	result = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(5)])
+	error_count = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(20)])
+	error_detail = models.CharField(max_length=255, blank=True)
+	last_edited_by = models.ForeignKey(CustomUser, blank=True, null=True, 
+	 								   related_name="last_edited_by", on_delete=models.PROTECT)
 
 
 	def __str__(self):

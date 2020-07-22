@@ -1,0 +1,13 @@
+[Unit]
+Description=scraper daemon
+Requires=network.target
+#add the gunicorn service and socket files to requires
+
+[Service]
+User=tecimler96
+Group=www-data
+WorkingDirectory=/home/tecimler96/APP/delivery-app-be/scraper
+ExecStart=/home/tecimler96/APP/delivery-app-be/scraper/run
+
+[Install]
+WantedBy=multi-user.target

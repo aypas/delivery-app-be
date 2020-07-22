@@ -45,3 +45,311 @@ ImportError: file_cache is unavailable when using oauth2client >= 4.0.0 or googl
 2020-06-30 08:06:12,767 INFO Refreshing credentials due to a 401 response. Attempt 1/2. @ request from module google_auth_httplib2
 2020-06-30 08:06:12,940 WARNING Encountered 403 Forbidden with reason "insufficientPermissions" @ _should_retry_response from module http
 2020-06-30 08:06:12,942 ERROR <HttpError 403 when requesting https://www.googleapis.com/gmail/v1/users/me/messages/1720a81062ba6754/modify?alt=json returned "Insufficient Permission">  @ do_scrape from module scraper
+2020-07-04 01:27:44,212 ERROR 'NoneType' object is not subscriptable  @ do_scrape from module scraper
+2020-07-04 01:29:07,472 ERROR 'NoneType' object is not subscriptable  @ do_scrape from module scraper
+2020-07-04 01:29:39,987 ERROR 'NoneType' object is not subscriptable  @ do_scrape from module scraper
+2020-07-04 01:30:09,931 ERROR 'NoneType' object is not subscriptable  @ do_scrape from module scraper
+2020-07-04 01:31:45,991 ERROR 'QuerySet' object has no attribute 'value'  @ do_scrape from module scraper
+2020-07-04 01:31:58,761 ERROR name 'f' is not defined  @ do_scrape from module scraper
+2020-07-04 01:33:13,164 ERROR 'pk'  @ do_scrape from module scraper
+2020-07-04 01:33:56,839 ERROR 'pk'  @ do_scrape from module scraper
+2020-07-04 01:34:11,794 WARNING file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth @ autodetect from module __init__
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 33, in <module>
+    from oauth2client.contrib.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 37, in <module>
+    from oauth2client.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/__init__.py", line 44, in autodetect
+    from . import file_cache
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 40, in <module>
+    raise ImportError(
+ImportError: file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth
+2020-07-04 01:34:15,541 WARNING file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth @ autodetect from module __init__
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 33, in <module>
+    from oauth2client.contrib.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 37, in <module>
+    from oauth2client.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/__init__.py", line 44, in autodetect
+    from . import file_cache
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 40, in <module>
+    raise ImportError(
+ImportError: file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth
+2020-07-04 01:34:19,262 ERROR list index out of range...this is very very bad @  @ save_to_database from module scraper
+2020-07-04 01:34:19,289 WARNING file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth @ autodetect from module __init__
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 33, in <module>
+    from oauth2client.contrib.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 37, in <module>
+    from oauth2client.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/__init__.py", line 44, in autodetect
+    from . import file_cache
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 40, in <module>
+    raise ImportError(
+ImportError: file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth
+2020-07-04 01:34:19,533 WARNING Encountered 403 Forbidden with reason "insufficientPermissions" @ _should_retry_response from module http
+2020-07-04 01:34:19,535 ERROR <HttpError 403 when requesting https://www.googleapis.com/gmail/v1/users/me/messages/1720a81062ba6754/modify?alt=json returned "Insufficient Permission">  @ do_scrape from module scraper
+2020-07-04 01:39:03,555 WARNING file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth @ autodetect from module __init__
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 33, in <module>
+    from oauth2client.contrib.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 37, in <module>
+    from oauth2client.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/__init__.py", line 44, in autodetect
+    from . import file_cache
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 40, in <module>
+    raise ImportError(
+ImportError: file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth
+2020-07-04 01:39:07,161 WARNING file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth @ autodetect from module __init__
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 33, in <module>
+    from oauth2client.contrib.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 37, in <module>
+    from oauth2client.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/__init__.py", line 44, in autodetect
+    from . import file_cache
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 40, in <module>
+    raise ImportError(
+ImportError: file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth
+2020-07-04 01:39:10,400 WARNING file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth @ autodetect from module __init__
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 33, in <module>
+    from oauth2client.contrib.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 37, in <module>
+    from oauth2client.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/__init__.py", line 44, in autodetect
+    from . import file_cache
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 40, in <module>
+    raise ImportError(
+ImportError: file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth
+2020-07-04 01:40:20,670 WARNING file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth @ autodetect from module __init__
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 33, in <module>
+    from oauth2client.contrib.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 37, in <module>
+    from oauth2client.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/__init__.py", line 44, in autodetect
+    from . import file_cache
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 40, in <module>
+    raise ImportError(
+ImportError: file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth
+2020-07-04 01:40:24,088 WARNING file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth @ autodetect from module __init__
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 33, in <module>
+    from oauth2client.contrib.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 37, in <module>
+    from oauth2client.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/__init__.py", line 44, in autodetect
+    from . import file_cache
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 40, in <module>
+    raise ImportError(
+ImportError: file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth
+2020-07-04 01:40:27,667 WARNING file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth @ autodetect from module __init__
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 33, in <module>
+    from oauth2client.contrib.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 37, in <module>
+    from oauth2client.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/__init__.py", line 44, in autodetect
+    from . import file_cache
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 40, in <module>
+    raise ImportError(
+ImportError: file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth
+2020-07-04 01:40:27,930 WARNING Encountered 403 Forbidden with reason "insufficientPermissions" @ _should_retry_response from module http
+2020-07-04 01:53:53,430 WARNING file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth @ autodetect from module __init__
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 33, in <module>
+    from oauth2client.contrib.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 37, in <module>
+    from oauth2client.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/__init__.py", line 44, in autodetect
+    from . import file_cache
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 40, in <module>
+    raise ImportError(
+ImportError: file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth
+2020-07-04 01:53:56,564 WARNING file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth @ autodetect from module __init__
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 33, in <module>
+    from oauth2client.contrib.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 37, in <module>
+    from oauth2client.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/__init__.py", line 44, in autodetect
+    from . import file_cache
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 40, in <module>
+    raise ImportError(
+ImportError: file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth
+2020-07-04 01:53:59,770 WARNING file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth @ autodetect from module __init__
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 33, in <module>
+    from oauth2client.contrib.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 37, in <module>
+    from oauth2client.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/__init__.py", line 44, in autodetect
+    from . import file_cache
+  File "/home/tecimler96/APP/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 40, in <module>
+    raise ImportError(
+ImportError: file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth
+2020-07-21 23:32:29,742 WARNING file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth @ autodetect from module __init__
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/delivery-app-be/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 33, in <module>
+    from oauth2client.contrib.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/delivery-app-be/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 37, in <module>
+    from oauth2client.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/delivery-app-be/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/__init__.py", line 44, in autodetect
+    from . import file_cache
+  File "/home/tecimler96/APP/delivery-app-be/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 40, in <module>
+    raise ImportError(
+ImportError: file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth
+2020-07-21 23:32:30,040 INFO Refreshing credentials due to a 401 response. Attempt 1/2. @ request from module google_auth_httplib2
+2020-07-21 23:32:33,657 WARNING file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth @ autodetect from module __init__
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/delivery-app-be/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 33, in <module>
+    from oauth2client.contrib.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/delivery-app-be/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 37, in <module>
+    from oauth2client.locked_file import LockedFile
+ModuleNotFoundError: No module named 'oauth2client'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tecimler96/APP/delivery-app-be/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/__init__.py", line 44, in autodetect
+    from . import file_cache
+  File "/home/tecimler96/APP/delivery-app-be/venv/lib/python3.8/site-packages/googleapiclient/discovery_cache/file_cache.py", line 40, in <module>
+    raise ImportError(
+ImportError: file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth
+2020-07-21 23:32:34,045 INFO Refreshing credentials due to a 401 response. Attempt 1/2. @ request from module google_auth_httplib2

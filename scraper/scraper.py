@@ -41,6 +41,7 @@ order fields:
 logging.basicConfig(filename='scraper.log', filemode='a', 
 					level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s @ %(funcName)s from module %(module)s')
 
+
 class Scrape:
 
 	def __init__(self):
@@ -59,9 +60,11 @@ class Scrape:
 
 	
 	def creds(self):
-		nodes, ret = Node.objects.all(), list()
+		nodes, ret = Node.objects.all().values('oauth', 'id'), list()
 		for i in nodes:
-			f=i.oauth
+			if i['oauth'] == None:
+				continue
+			f = i['oauth']
 			credentials = Credentials(token=f['token'], refresh_token=f['refresh_token'],
 							   		  id_token=f['id_token'], token_uri=f['token_uri'],
 							  		  client_id=f['client_id'], client_secret=f['client_secret'],
@@ -73,7 +76,7 @@ class Scrape:
 				credentials.refresh()
 				i.oauth["token"] = credentials.token
 				i.save()
-			ret.append([credentials, i.pk])	
+			ret.append([credentials, i['id']])	
 		return ret
 
 	def get_message_bods(self):
@@ -474,7 +477,7 @@ class Scrape:
 		this method is for test purposes only.
 		'''
 		service = build('gmail', 'v1', credentials=self.credentials[0][0])
-		for email in self.vals:
+		for email in self.unpacked_ebs:
 			labels={'addLabelIds':['UNREAD'], 'removeLabelIds':[]}
 			result = service.users().messages().modify(userId='me', id=email['email_id'],
 										   	 		   body=labels).execute()
@@ -486,19 +489,23 @@ class Scrape:
 		'''
 		try:
 			scrape = Scrape()
+			print('scrape happened')
 			scrape.delivery_scrape()
+			print('delivery works')
 			scrape.grubhub_scrape()
+			print('grub works')
 			scrape.chow_now_scrape()
 			scrape.brandibble_scrape()
 			scrape.toasttab_scrape()
 			scrape.gloriafood_scrape()
+			print('495')
 			scrape.error_retry()
-			if not scrape.save_to_database():
-				scrape.gmail_labels()
-				print('ran labels')
-			else:
-				#save each...1b1?
-				pass
+			# if not scrape.save_to_database():
+			# 	scrape.gmail_labels()
+			# 	print('ran labels')
+			# else:
+			# 	print('labels didnt work')
+			# 	pass
 			return scrape
 		except Exception as e:
 			print(e)
@@ -507,4 +514,5 @@ class Scrape:
 
 
 if __name__ == '__main__':
-	Scrape.do_scrape()
+	#Scrape.do_scrape()
+	print(10)

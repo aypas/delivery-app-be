@@ -14,7 +14,7 @@ import os
 from datetime import timedelta
 from dotenv import load_dotenv
 from pathlib import Path
-
+from corsheaders.defaults import default_headers
 
 load_dotenv()
 load_dotenv(dotenv_path=Path('.'))
@@ -84,8 +84,7 @@ CSRF_TRUSTED_ORIGINS = [os.environ['TRUSTED_ORIGIN'],]
 
 CORS_ORIGIN_ALLOW_ALL = True   #remove in production
 CORS_ALLOW_CREDENTIALS = True  #remove in production
-#CORS_ALLOW_HEADERS = ['Refresh',]
-
+CORS_ALLOW_HEADERS = default_headers + ('Permissions',)
 
 AUTH_USER_MODEL = 'authentication.CustomUser'
 

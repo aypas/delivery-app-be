@@ -20,7 +20,7 @@ class IsSoleNodeOwner(permissions.BasePermission):
 	def has_permission(self, request, view):
 		print('IsSoleNodeOwner has run')
 		try:
-			owner = Node.objects.get(owner__email=request.user)
+			owner = Node.objects.filter(owner__email=request.user).first()
 			return True
 		except:
 			return False

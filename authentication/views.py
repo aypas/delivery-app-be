@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, throttle_classes, permission_classes
 
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
@@ -13,7 +14,9 @@ from django.contrib.auth import get_user_model
 
 from authentication.misc import flow
 from authentication.permissions import IsNodeOwnerOrManager, IsSoleNodeOwner
-from authentication.serializers import UserMetaSerializer as US, UserSerializer
+from authentication.serializers import (UserMetaSerializer as US,
+										UserAndTokenPairObtainSerializer)
+
 
 from business_logic.models import Node
 
@@ -58,6 +61,9 @@ class SignUp(APIView):
 				return Response({"data": US(model).data}, status=status.HTTP_200_OK)
 			except IntegrityError as e:
 				return Response({"detail": "an account with that email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+class TokenObtainPair(TokenObtainPairView):
+	serializer_class = UserAndTokenPairObtainSerializer
 
 
 class User(APIView):
@@ -124,8 +130,8 @@ def Oauth2Callback(request):
 	try:
 		auth_code = request.GET.get('code')
 		print(request.GET.get('state'), 'is it working?')
-		fl = flow.fetch_token(code=auth_code)
-		creds = fl.credentials
+		flow.fetch_token(code=auth_code)
+		creds = flow.credentials
 		if not creds.refresh_token:
 			print( '''Something went wrong. We need you to delete any permissions
 											you\'ve given us and try again''')

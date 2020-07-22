@@ -15,7 +15,6 @@ from business_logic.models import Node, Partner, Order
 def node(n=0):
 	faker = Faker()
 	f = range(0, CustomUser.objects.count())
-	
 	for _ in range(n):
 
 		r = CustomUser.objects.all()[1]
@@ -33,19 +32,19 @@ def node(n=0):
 
 def order(n):
 	print(str(n))
-	f=Partner.objects.all().count()
+	f=[i.id for i in Partner.objects.filter(of_node_id=1)]
 	faker = Faker()
 
 	if not f:
 		raise Exception("must have at least one partner before you can create an Order")
 
-	for _ in range(f):
+	for _ in range(n):
 
 		try:
-			Order.objects.create(store=Partner.objects.all()[random.choice(range(0,f))],
+			Order.objects.create(store_id=random.choice(f),
 									assigned_to=None, source=random.choice(['grubhub', 'doordash', 'chownow']),
 									customer_phone=faker.phone_number(), order_number=random.choice(range(1,100000)), name=faker.name(),
-									address=faker.address(), deliver_by=dt.datetime.now()+dt.timedelta(hours=1),
+									address=faker.address(), deliver_by=dt.datetime.now()+dt.timedelta(hours=random.choice([2,3,4,5])),
 									total_price=random.choice([28.92, 42.55, 21.11]), tip=random.choice([3.00, 2.55, 5.01]), delivery_fee=3.00)
 
 		except Exception as e:
