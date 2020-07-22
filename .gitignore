@@ -1,2 +1,2 @@
 venv
-scraper/html
+*.html
