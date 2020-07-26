@@ -1,7 +1,8 @@
+# mv file to /etc/systemd/system
+# add the gunicorn service and socket files to requires
 [Unit]
 Description=scraper daemon
 Requires=network.target
-#add the gunicorn service and socket files to requires
 
 [Service]
 User=tecimler96

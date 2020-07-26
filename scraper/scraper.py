@@ -1,12 +1,18 @@
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
+from gmail import GmailApi
 from bs4 import BeautifulSoup
-from scraper_regex import DeliveryHelper, CommonHelper, GloriaHelper, BrandHelper, ToastHelper
+from scraper_regex import DeliveryHelper, CommonHelper, GloriaHelper, BrandHelper, GrubHubHelper, ToastHelper
 import sys, os, django, base64, re, logging
 sys.path.append('..')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", 'delivery_app.settings')
 django.setup()
 from business_logic.models import Node, Partner, Order
+
+#found a major bug which allows the same gmail account to be linked twice...
+#in order to fix it you must query Node.objects.filter(oauth__token=request.code['token'])
+#and make sure there is no match, if there is, send back an error that says
+#you cant link one account to several nodes...
+
+
 
 '''
 node fields:
@@ -39,108 +45,24 @@ order fields:
 '''
 
 logging.basicConfig(filename='scraper.log', filemode='a', 
-					level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s @ %(funcName)s from module %(module)s')
+					level=logging.ERROR, 
+					format='%(asctime)s %(levelname)s %(message)s @ %(funcName)s from module %(module)s')
+
 
 
 class Scrape:
-
-	def __init__(self):
-		self.credentials = self.creds()
-		self.emails_by_source = {'delivery.com': [], 'grubhub.com': [],
-								 'chownow.com': [], 'gloriafood.com': [],
-								 'brandibble': [], 'toasttab.com': [],
-								 'unknown': []}
-		self.get_message_bods()
-		self.sources = [['delivery.com', self.delivery_scrape], 
-						['chownow.com', self.chow_now_scrape],
-						['grubhub.com', self.grubhub_scrape],
-						['toasttab.com', self.toasttab_scrape],
-						['brandibble', self.brandibble_scrape],
-						['gloriafood.com', self.gloriafood_scrape]]
-
-	
-	def creds(self):
-		nodes, ret = Node.objects.all().values('oauth', 'id'), list()
-		for i in nodes:
-			if i['oauth'] == None:
-				continue
-			f = i['oauth']
-			credentials = Credentials(token=f['token'], refresh_token=f['refresh_token'],
-							   		  id_token=f['id_token'], token_uri=f['token_uri'],
-							  		  client_id=f['client_id'], client_secret=f['client_secret'],
-							 		  scopes=f['scopes'])
-
-			print(credentials.valid)
-			if not credentials.valid:
-				print('refreshing...')
-				credentials.refresh()
-				i.oauth["token"] = credentials.token
-				i.save()
-			ret.append([credentials, i['id']])	
-		return ret
-
-	def get_message_bods(self):
-		for creds in self.credentials:
-
-			service = build('gmail', 'v1', credentials=creds[0])
-
-			#grabs list of emails matching query parameter
-			result = service.users().messages().list(userId='me',q='from:omardoor2door@gmail.com').execute()
-			#just realized i need to set q up with email of node...so that must also be added to self.creds
-			
-			if not result['resultSizeEstimate']:
-				continue
-
-			for i in result['messages']:
-				email_id = i['id']
-				
-
-				f = service.users().messages().get(id=i['id'], userId='me', format='full').execute()
-				label_id = f['labelIds']
-
-				payload = f['payload']['parts'][1]['body']['data']
-				
-
-				#here, we decode part two(html), part one is weird, don't use it
-				body = BeautifulSoup(base64.urlsafe_b64decode(payload).decode('utf-8'), 'html.parser')
-
-				#here we turn the bytes object to a string and append to a dict/list to be returned
-				self.find_source({'email_id': email_id, 'body': body,
-							 	  'creds': creds[0], 'node_id': creds[1], 
-							 	  'labels': f['labelIds'], 'err': 0})
-
-	def find_source(self, email_details):
-			
-		soup = email_details['body']
-
-		f=str(soup.blockquote)
-
-		if 'delivery.com' in f:
-			self.emails_by_source['delivery.com'].append(email_details)
-		elif 'chownow.com' in f:
-			self.emails_by_source['chownow.com'].append(email_details)
-		elif 'grubhub.com' in f:
-			self.emails_by_source['grubhub.com'].append(email_details)
-		elif 'gloriafood.com' in f:
-			self.emails_by_source['gloriafood.com'].append(email_details)
-		elif 'brandibble' in f:
-			self.emails_by_source['brandibble'].append(email_details)
-		elif 'toasttab.com' in f:
-			self.emails_by_source['toasttab.com'].append(email_details)
+	#maybe use inheritance???
+	def __init__(self, test=False):
+		if not test:
+			self.GmailApi = GmailApi()
 		else:
-			logging.warning("email found with unknown source")
-			self.emails_by_source['unknown'].append(email_details)
-		return None
-
-	@property
-	def unpacked_ebs(self):
-		ret = list()
-		for i in self.sources:
-			ret.extend(self.emails_by_source[i[0]])
-		return ret
+			self.GmailApi = GmailApi(test=True)
+		#self.GmailApi.emails_by_source['xxx']
 	
-	def delivery_scrape(self, retry=False, jobs=None):
-		emails = jobs if retry else self.emails_by_source['delivery.com']
+	def delivery_scrape(self):
+		#usually deliver by is asap...as omar how long that should be...
+		#otherwise, if you make it so that a pick up has a del fee of 0, this should work
+		emails = self.GmailApi.emails_by_source['delivery.com']
 
 		for email in emails:
 			try:
@@ -156,17 +78,13 @@ class Scrape:
 				deliver_by = soup.find('td', colspan='4').span.text
 
 
-
 				#get customer's name, address, special instructions, order time, and phone#
 				customer_data = soup.find('tr', id='CUSTOMER-INFO-AND-SPECIAL-INSTRUCTIONS')
 				customer_info = DeliveryHelper.customer_info(''.join(customer_data.strings).splitlines())
 
 				#all vars are added to dict
 				ret = {'order_number':order_num or '', 'partner': partner or '',
-					   'deliver_by': deliver_by, 'note': '', **customer_info}#FIX DELIVERY BY!!!
-
-				#print(ret)
-				#i might need to pay someone to figure this one out...address is rough...
+					   'deliver_by': deliver_by, **customer_info}
 
 
 
@@ -185,8 +103,9 @@ class Scrape:
 					elif ' '.join(i.split())=='Merchant receives:':
 						ret['total_price'] = DeliveryHelper.strip_float(j) or ''
 
+				if ret.get('address', None) == 'pickup':
+					ret['delivery_fee'] = float(0)
 					#add db values to dict
-				
 				email['db_values'] = ret
 			except Exception as e:
 				if email['err'] == 0:
@@ -196,19 +115,15 @@ class Scrape:
 
 		return None
 
-	def grubhub_scrape(self, retry=False, jobs=None):
-		emails = jobs if retry else self.emails_by_source['grubhub.com']
+	def grubhub_scrape(self):
+		#looks to be working fine
+		emails = self.GmailApi.emails_by_source['grubhub.com']
 		for email in emails:
 			try:
 				soup = email['body']
-
-				#html = str(soup.find_all('blockquote', attrs={'type': 'cite'})[1]) #oooooooooo
-
-				#retreival of partner and name is simple, only two calls
 				partner = soup.find('div', attrs={'data-field':'restaurant-name'}).text
 				name = soup.find('div', attrs={'style': 'color:#000;font-family:Roboto,sans-serif;font-size:14px;line-height:16px;margin-top:0'}).text
 				order_id = ''.join(soup.find_all('span', attrs={'style': 'font-weight:700'})[1].strings)
-				#print(order_id)
 
 				order_data = soup.find('div', attrs={'data-section':"order"})
 				tip = order_data.find('div', attrs={'data-field':'tip'}).text
@@ -216,7 +131,7 @@ class Scrape:
 				total = order_data.find('div', attrs={'data-field':'total'}).text
 
 				deliver_by = soup.find('div', attrs={'style':'color:#000;font-family:Roboto,sans-serif;font-size:18px;line-height:17px;margin:10px;margin-top:4px;margin-left:31px;font-weight:700; '})
-				deliver_by = deliver_by.text.split('  ')[2].strip()
+				deliver_by = GrubHubHelper.deliver_by(deliver_by.text.split('  ')[2].strip())
 
 
 
@@ -274,9 +189,11 @@ class Scrape:
 
 		#and also, having the actual order number would be good for almir probably(currently, order # is order id)
 
-	def chow_now_scrape(self, retry=False, jobs=None):
+	def chow_now_scrape(self):
 		#deliver by does not work...
-		emails = jobs if retry else self.emails_by_source['chownow.com']
+		#neither does note, as I haven't gotten any examples with a note
+		#deliver by is also needed
+		emails = self.GmailApi.emails_by_source['chownow.com']
 		for email in emails:
 			try:
 				soup = email['body']
@@ -294,10 +211,11 @@ class Scrape:
 
 
 				#customer details
-				customer_name, customer_phone, address, delivery_time = str(), str(), str(), str()
+				customer_name, customer_phone, address, deliver_by = str(), str(), str(), str()
 				for i in doc[1].find_all('div'):
 					label = i.label
 					if label:
+						print(label)
 						if label.text == 'Customer Name':
 							customer_name = i.find('span').text
 						elif label.text == 'Customer Phone Number':
@@ -308,17 +226,17 @@ class Scrape:
 							#print(i)
 							address = re.sub(r"\n|\r|\s+"," ",i.find('span').text).strip()
 
-						elif label.text == 'Time Of Order':
-							pass
-							#print(i.text)
 						elif label.text == 'Requested Delivery Time':
+							print('reqqqq')
 							i.label.decompose()
+							print(i.label)
 							deliver_by = i.text
+
 
 
 				email['db_values'] = {'partner': partner, 'order_number':order_num,
 									  'customer_phone': customer_phone, 'address': address,
-									  'customer_name': customer_name, #'deliver_by': deliver_by,
+									  'customer_name': customer_name, 'deliver_by': deliver_by,
 									  'note': ''}
 
 				#Order Details
@@ -341,8 +259,9 @@ class Scrape:
 				continue
 		return None
 
-	def gloriafood_scrape(self, retry=False, jobs=None):
-		emails = jobs if retry else self.emails_by_source['gloriafood.com']
+	def gloriafood_scrape(self):
+		#gloriafood does have notes in given examples, but idk what will happen with no note...
+		emails = self.GmailApi.emails_by_source['gloriafood.com']
 		for email in emails:
 			try:
 				soup = email['body'].find('table', attrs={'class': 'templateContainer'})
@@ -350,11 +269,8 @@ class Scrape:
 
 				order_num, rname = GloriaHelper.ordern_and_rname(main[1].find('h1').text)
 				deliver_time = main[2].find('td', attrs={"class": "mcnTextContent"}).select("div > span > span > table")
-				index = GloriaHelper.date_time(deliver_time[0].text.splitlines())
-				if index != None:
-					delivery_time = deliver_time[index]
-				else: 
-					delivery_time = 'unknown'
+				delivery_time = GloriaHelper.date_time(deliver_time[0].text.splitlines())
+
 
 				customer = main[2].find('td', attrs={'class': "mcnBoxedTextContentColumn"})
 				name_phone_addr = customer.span.text.splitlines()
@@ -374,8 +290,9 @@ class Scrape:
 				email['err']+=1
 				continue
 
-	def brandibble_scrape(self, retry=False, jobs=None):
-		emails = jobs if retry else self.emails_by_source['brandibble']
+	def brandibble_scrape(self):
+		#i think the given note is 'notes for store'
+		emails = self.GmailApi.emails_by_source['brandibble']
 		for email in emails:
 			try:
 				soup = email['body']
@@ -389,11 +306,12 @@ class Scrape:
 				email['err']+=1
 				continue
 
-	def toasttab_scrape(self, retry=False, jobs=None):
-		emails = jobs if retry else self.emails_by_source['toasttab.com']
+	def toasttab_scrape(self):
+		emails = self.GmailApi.emails_by_source['toasttab.com']
 		for email in emails:
 			try:
 				soup = email['body']
+				partner = ToastHelper.partner(soup.find('blockquote').text)
 				soup_major = soup.find_all('blockquote')[1]\
 						.select('table > tbody')[0]\
 						.find_all('table')[1].select('tbody')[0]
@@ -402,18 +320,12 @@ class Scrape:
 				order_number = ToastHelper.order(soup_major.find('strong'))
 				customer_and_prices = soup_major.select('table')[0].select('tr')
 				c_and_p = ToastHelper.customer(customer_and_prices)
-				email['db_values'] = {'order_number': order_number, **c_and_p}
-			except Exeption as e:
+				email['db_values'] = {'order_number': order_number, 'partner': partner, **c_and_p, 'note': ''}
+			except Exception as e:
 				if email['err'] == 0:
 					logging.error(str(e)+f" error with {email['email_id']} id @")
 				email['err']+=1
 				continue
-
-	def error_retry(self):
-		for i in self.sources:
-			err_scrape = list(filter(lambda email: email['err'] == 1, self.emails_by_source[i[0]])) 
-			if err_scrape:
-				self.i[1](retry=True, jobs=err_scrape)
 
 	def save_to_database(self):
 		'''
@@ -421,66 +333,39 @@ class Scrape:
 		'''
 		try:
 			bulk = list()
-			for source in self.sources:
-				for data in self.emails_by_source[source[0]]:
-					if data['err']!=0:
-						result = "something went wrong"
-					else:
-						result = 'success'
-					print(data['node_id'], data['db_values']['partner'])
-					partner = Partner.objects.all().filter(of_node_id=data['node_id'])\
-											       .filter(name__contains=data['db_values']['partner'])[0]
-					bulk.append(Order(store=partner,html=data['body'].find_all('blockquote')[1], assigned_to=None,
-									  result=result, source=source[0],
-									  customer_phone=data['db_values']['customer_phone'],
-									  order_number=data['db_values']['order_number'],
-									  name=data['db_values']['customer_name'], 
-									  address=data['db_values']['address'],
-									  deliver_by=data['db_values']['deliver_by'],
-									  total_price=data['db_values']['total_price'],
-									  tip=data['db_values']['tip'],
-									  delivery_fee=data['db_values']['delivery_fee'],
-									  note=data['db_values']['note']))
 
-			Order.objects.bulk_create(bulk)
+			for key in self.GmailApi.emails_by_source.keys():
+				for data in self.GmailApi.emails_by_source[key]:
+					try:
+						if data['err']!=0:
+							result = "something went wrong"
+						else:
+							result = 'success'
+						print(data['node_id'], data['db_values']['partner'])
+						partner = Partner.objects.all().filter(of_node_id=data['node_id'])\
+												       .filter(name__contains=data['db_values']['partner'])[0]
+						bulk.append(Order(store=partner,html=data['body'].find_all('blockquote')[1], 
+										  assigned_to=None, result=result, source=key,
+										  customer_phone=data['db_values']['customer_phone'],
+										  order_number=data['db_values']['order_number'],
+										  name=data['db_values']['customer_name'], 
+										  address=data['db_values']['address'],
+										  deliver_by=data['db_values']['deliver_by'],
+										  total_price=data['db_values']['total_price'],
+										  tip=data['db_values']['tip'],
+										  delivery_fee=data['db_values']['delivery_fee'],
+										  note=data['db_values']['note']))
+					except Exception as e:
+						print(e)
+						continue
+
+			#Order.objects.bulk_create(bulk)
+			print(bulk)
 			return True
 		except Exception as e:
 			print(e)
 			logging.error(str(e)+f"...this is very very bad @ ")
 			return False
-
-	def gmail_labels(self):
-		'''
-		this method modifies the succesfully scraped messages
-		so that they no longer have an unread label, 
-		and will no longer be retrieved on __init__
-
-		the fucked up thing here is that no token is ever refreshed...
-		'''
-		print('running labs')
-		labels={'addLabelIds':[], 'removeLabelIds':['UNREAD']}
-		emails = self.unpacked_ebs
-		for i in self.creds():
-			node_emails = list(filter(lambda x: i[1]==x['node_id'], emails))
-			if not node_emails:
-				continue
-			service = build('gmail', 'v1',credentials=i[0])
-
-			for email in node_emails:		
-				service.users().messages().modify(userId='me', id=email['email_id'],
-											   	  body=labels).execute()
-
-	
-	def unread(self):
-		'''
-		changes label of read email to unread
-		this method is for test purposes only.
-		'''
-		service = build('gmail', 'v1', credentials=self.credentials[0][0])
-		for email in self.unpacked_ebs:
-			labels={'addLabelIds':['UNREAD'], 'removeLabelIds':[]}
-			result = service.users().messages().modify(userId='me', id=email['email_id'],
-										   	 		   body=labels).execute()
 
 	@staticmethod
 	def do_scrape():
@@ -490,22 +375,17 @@ class Scrape:
 		try:
 			scrape = Scrape()
 			print('scrape happened')
-			scrape.delivery_scrape()
-			print('delivery works')
+			#scrape.delivery_scrape()
 			scrape.grubhub_scrape()
-			print('grub works')
 			scrape.chow_now_scrape()
 			scrape.brandibble_scrape()
 			scrape.toasttab_scrape()
 			scrape.gloriafood_scrape()
-			print('495')
-			scrape.error_retry()
-			# if not scrape.save_to_database():
-			# 	scrape.gmail_labels()
-			# 	print('ran labels')
-			# else:
-			# 	print('labels didnt work')
-			# 	pass
+			
+			if scrape.save_to_database():
+				print('it worked!')
+			else:
+				print('sheeeeit')
 			return scrape
 		except Exception as e:
 			print(e)
@@ -515,4 +395,4 @@ class Scrape:
 
 if __name__ == '__main__':
 	#Scrape.do_scrape()
-	print(10)
+	scrape = Scrape.do_scrape()

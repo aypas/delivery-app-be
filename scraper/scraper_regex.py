@@ -1,5 +1,8 @@
-import re
+import re, pytz
+from datetime import datetime, timedelta
+import datetime as dt
 
+eastern = pytz.timezone('US/Eastern')
 #all this needs desperate fixing
 class CommonHelper:
 
@@ -21,7 +24,7 @@ class CommonHelper:
 	@staticmethod
 	def strip_phone_num(val):
 		for i in val:
-			if re.match(r"^\+|^(.*?)|^(1?(-?\d{3})-?)?(\d{3})(-?\d{4})$", i):
+			if re.match(r"((\(\d{3}\) ?)|(\d{3}-))?\d{3}-\d{4}", i):
 				return i
 		return None
 
@@ -86,10 +89,12 @@ class DeliveryHelper(CommonHelper):
 				name_index = i
 				break
 		b, index = CommonHelper.is_zipcode(val, start_index=name_index+1)
-		phone_num = str()
+		phone_num, note = str(), str()
+		for i in range(len(val)):
+			if val[i] == "SPECIAL INSTRUCTIONS:":
+				note = ''.join(val[i+1:-1]).strip()
 		if not b:
-			address = 'probs pickup'
-			#check to see if order is for pickup
+			address = 'pickup'
 		else:
 			address = val[index-1]+val[index]
 			if CommonHelper.strip_phone_num([val[index+1]])!=None:
@@ -97,10 +102,16 @@ class DeliveryHelper(CommonHelper):
 		if not phone_num:
 			phone_num = CommonHelper.strip_phone_num(val)
 
-
 		return {'customer_phone': phone_num,
 				'address': address,
-				'customer_name': name}
+				'customer_name': name,
+				'note': note}
+
+class GrubHubHelper:
+
+	@staticmethod
+	def deliver_by(data):
+		return eastern.localize(datetime.strptime(data, "%B %d, %Y, %I:%M %p")).astimezone(pytz.utc)
 
 class GloriaHelper(CommonHelper):
 
@@ -111,10 +122,11 @@ class GloriaHelper(CommonHelper):
 
 	@staticmethod
 	def date_time(val):
-		#print(val)
-		for i in range(len(val)):
-			if CommonHelper.match_time(val[i]):
-				return i
+		for i in val:
+			if "minutes" in i:
+				return (datetime.now()+timedelta(minutes=int(i.strip()[:2]))).astimezone(pytz.utc)
+			if "day" in i:
+				return eastern.localize(datetime.strptime(i.strip(),"%A, %B %d, %Y, %I:%M %p")).astimezone(pytz.utc)
 
 	@staticmethod
 	def name_phone_addr(val):
@@ -127,9 +139,10 @@ class GloriaHelper(CommonHelper):
 			name = 'sheeeit'
 
 		for i in val:
-			if p:=CommonHelper.strip_phone_num(val):
-				phone = p 
-				break
+			if re.match(r"^\+|(1?(-?\d{3})-?)?(\d{3})(-?\d{4})$", i):
+			 	#print(i)
+			 	phone=i
+			 	break
 		addr = val[-1]
 		return {'customer_name': name,
 				'customer_phone': phone,
@@ -149,12 +162,27 @@ class GloriaHelper(CommonHelper):
 			elif 'TIP:' == val[i].text:
 				tip = CommonHelper.strip_float(val[i+1].text)
 
-		return {'total': total,
+		return {'total_price': total,
 				'tip': tip,
 				'delivery_fee': delivery_fee}
 
 
 class BrandHelper(CommonHelper):
+	@staticmethod
+	def date_time(time):
+		if 'between' in time:
+			print('started')
+			t1 = re.findall(r"((([1-9]|[012])\:([0-5][0-9]))(AM|PM))", time)[1][0]
+			print(t1)
+			t = datetime.strptime(t1, "%I:%M%p")
+			return eastern.localize(datetime.combine(datetime.now().date(), t.time())).astimezone(pytz.utc)
+
+		elif 'about' in time:
+
+			indexes = re.search(r"(([1-9]|[012])\:([0-5][0-9]))\s(AM|PM)", time).span()
+			tt = datetime.strptime(time[indexes[0]:indexes[1]], "%I:%M %p")
+			print(tt, time)
+			return eastern.localize(datetime.combine(datetime.now().date(), tt.time())).astimezone(pytz.utc)
 	@staticmethod
 	def customer_and_rest(val):
 		name, address, phone_num, order_id, partner, deliver_by = str(), str(), str(), str(), str(), str()
@@ -166,15 +194,20 @@ class BrandHelper(CommonHelper):
 				text = t[1].splitlines()
 				name = text[1].strip()
 				address = ''.join(text[2:]).strip()
-				print(address, 'hellooooo\n')
+				#print(address, 'hellooooo\n')
 			elif t[0] == 'Phone':
 				phone_num = t[1].strip()
 			elif t[0] == 'Order ID':
 				order_id = t[1].strip()
 			elif 'Store' == t[0]:
 				partner = t[1].strip()
+			elif 'Notes for Store' == t[0]:
+				note = t[1].strip()
 			elif 'Requested Time' == t[0]:
-				deliver_by = t[1]
+				#theres one email with between x and y
+				#another with 'by about x'
+				#there might be other formats tho
+				deliver_by = BrandHelper.date_time(t[1])
 			elif 'Order Type' == t[0]:
 				if t[1].strip()=='Pick-Up':
 					address = str()
@@ -185,9 +218,10 @@ class BrandHelper(CommonHelper):
 		return {'customer_name': name,
 				'address': address,
 				'customer_phone': phone_num,
-				'order_id': order_id,
+				'order_number': order_id,
 				'partner': partner,
-				'deliver_by': deliver_by}
+				'deliver_by': deliver_by,
+				'note': note}
 
 	@staticmethod
 	def prices(val):
@@ -200,44 +234,54 @@ class BrandHelper(CommonHelper):
 				total = CommonHelper.strip_float(t[2])
 			elif 'Delivery Fee' in t[1]:
 				d_fee = CommonHelper.strip_float(t[2])
-		return {'total': total,
+		return {'total_price': total,
 				'delivery_fee': d_fee,
 				'tip': tip}
 
 class ToastHelper(CommonHelper):
+	
 	@staticmethod
-	def prices(val):
-		pass
+	def partner(val):
+		return re.split(r':|<', val, maxsplit=2)[1].strip()
+
 
 	@staticmethod
 	def customer(val):
 		f = dict()
+		partner, deliver_by, customer_name, address, customer_phone = str(), str(), str(), str(), str()
+		delivery_fee, tip, total_price = float(), float(), float()
 		for i in val:
 			t = i.text.splitlines()
 			#print(t)
 			if t[1] == 'Deliver by':
-				f['deliver_by'] = t[2]
+				#truly the strangest error ive even encountered
+				#in shell, or in a differnt module '5:02 pm EDT' is strped with '%I:%M %p %Z'
+				#but here in this function, it does not(no match error)...
+				#try it again, or post it on reddit
+				deliver_by = t[2].replace('EDT', '').strip()
+				try:
+					t=datetime.strptime(deliver_by, "%I:%M %p")
+					d=dt.date(2020, 5, 12)
+					deliver_by = eastern.localize(datetime.combine(d, t.time())).astimezone(pytz.utc)
+				except Exception as e:
+					print(e)
 			elif t[1] == 'Customer Info':
 				t = list(filter(lambda t: t!='', t))
-				f['customer_name'] = t[1].strip()
-				f['address'] = t[2].strip()
-				f['customer_phone'] = t[3].strip()
+				customer_name = t[1].strip()
+				address = t[2].strip()
+				print(t[2])
+				customer_phone = t[3].strip()
 				#print(t)
 				#f['address'] = ''.join(t[2:])
 			elif t[1] == 'Delivery Fee':
-				f['delivery_fee'] = CommonHelper.strip_float(t[2])
+				delivery_fee = CommonHelper.strip_float(t[2])
 			elif t[1] == 'Tip':
-				f['tip'] == CommonHelper.strip_float(t[2])
+				tip == CommonHelper.strip_float(t[2])
 			elif t[1] == 'Total':
-				f['total'] = CommonHelper.strip_float(t[2])
-			elif t[1] == 'Restaurant Info':
-				t = list(filter(lambda t: t!='', t))
-				print(t)
-				for i in range(len(t[1])):
-					if t[1][i].isdigit():
-						f['partner'] = t[1][:i].strip()
-						break
-		return f
+				total_price = CommonHelper.strip_float(t[2])
+		return {'deliver_by': deliver_by, 'customer_name': customer_name,
+				'address': address, 'customer_phone': customer_phone,
+				'delivery_fee': delivery_fee, 'tip': tip, 'total_price': total_price}
 
 	@staticmethod
 	def order(val):
