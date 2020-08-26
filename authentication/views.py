@@ -12,8 +12,8 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 
-from authentication.misc import flow
-from authentication.permissions import IsNodeOwnerOrManager, IsSoleNodeOwner
+from authentication.misc import flow, sign_permissions
+from authentication.permissions import IsNodeOwnerOrManager, IsNodeOwner
 from authentication.serializers import (UserMetaSerializer as US,
 										UserAndTokenPairObtainSerializer)
 
@@ -65,6 +65,11 @@ class SignUp(APIView):
 class TokenObtainPair(TokenObtainPairView):
 	serializer_class = UserAndTokenPairObtainSerializer
 
+	def post(self, request, *args, **kwargs):
+		response = super().post(request, *args, **kwargs)
+		response.set_cookie('permissions_sign', sign_permissions(response))
+		return response
+
 
 class User(APIView):
 
@@ -74,7 +79,6 @@ class User(APIView):
 		
 		try:
 			return get_user_model().objects.get(email=email)
-
 		except Exception as e:
 			return e
 	def get(self, request):
@@ -112,8 +116,9 @@ class UsersOfNode(APIView):
 			return Response({"detail": f"trailing /{cflow} is not valid"}, status=status.HTTP_404_NOT_FOUND)
 		
 @api_view(["GET"])
-@permission_classes([IsSoleNodeOwner])
-def init(request):
+@permission_classes([IsNodeOwner])
+def init(request, node_pk):
+	print(node_pk)
 	url, _ = flow.authorization_url(
 				access_type='offline',
 			    # Enable incremental authorization. Recommended as a best practice.
@@ -124,7 +129,7 @@ def init(request):
 
 
 @api_view(["GET", "POST"])
-def Oauth2Callback(request):
+def Oauth2Callback(request, node_pk):
 	#if fail, instuct user to to https://myaccount.google.com/permissions,
 	#delete any granted permission, and try again
 	try:

@@ -4,7 +4,6 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-
 from django.db.models import Count, Case, When, IntegerField
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
@@ -15,17 +14,17 @@ from .serializers import (NodeSerializer as NS,
 						  PartnerSerializer as PS,
 						  PartnerPutSerializer,
 						  OrderSerializer as OS)
-
-
 from .datetime_utils import make_datetime_object
 import json, urllib
 #every single error message needs to respond with {"status" 4.., "detail": "something" }
 #which amounts to Response({"detail": "thing"}, status=HTTP_4...)
-#catch on axios with error.response
+#catch on axios with error.response.detail
 
 class NodeView(APIView):
 	permission_classes = [IsAuthenticated, IsNodeOwnerOrManager]
-
+	#post: pk = owner's id -- make sure user has permission to create node
+	#get: pk = id of node of object -- make sure user has permission to change
+	#put: pk = id of node object -- make sure user has permission to change
 	def get_object(self, pk):
 		return Node.objects.get(pk=pk)
 
@@ -61,7 +60,7 @@ class NodeView(APIView):
 
 class ChangeUserPermissions(APIView):
 	permission_classes = [IsAuthenticated,]
-	
+	#make sure user has permission to change -- must be owner
 	def get_object(self, node_pk, user_pk, permission):
 		if permission == "worker":
 			Node.workers.through.objects.filter(node_id=node_pk, customuser_id=user_pk)
@@ -109,6 +108,7 @@ class OrderView(APIView):
 
 	def get(self, request, pk):
 		#gets many, pk represents id of node
+		print(request.META)
 		serializer = OS(self.get_data(pk, request=request), many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 

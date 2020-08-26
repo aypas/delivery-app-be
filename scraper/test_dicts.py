@@ -31,13 +31,13 @@ gloria2 = {'address':'1112 Park Avenue, #1R, 07030, Hoboken','customer_name':'Ch
 #deliver_by is now a datetime object
 #i need to know if there are ever orders places for specific days tho...
 brand1 = {'address':'','customer_name':'Nautica Smith','customer_phone':'201-284-1285',
-   		  'partner':'Quality Greens Kitchen','order_number':'7633599','deliver_by':datetime(2020, 7, 25, 18, 52).astimezone(pytz.utc),
+   		  'partner':'Quality Greens Kitchen','order_number':'7633599','deliver_by':datetime(2020, 7, 30, 18, 52).astimezone(pytz.utc),
           'total_price': 12.10, 'tip': float(0),'delivery_fee': float(0),'note':''}
 
 #1720a7f978469107
 brand2 = {'address':'415 Jackson Street  Apt / Suite: 2R  Hoboken, NJ 07030','customer_name':'Robert La Rocca',
    		  'customer_phone':'845-520-8788','partner':'Quality Greens Kitchen','order_number':'7634064',
-   		  'deliver_by':datetime(2020, 7, 25, 20, 17).astimezone(pytz.utc),'total_price':31.57,'tip': 6.00,
+   		  'deliver_by':datetime(2020, 7, 30, 20, 17).astimezone(pytz.utc),'total_price':31.57,'tip': 6.00,
    		  'delivery_fee': 2.50, 'note':'Please call'}
 
 #source = grubhub

@@ -11,6 +11,6 @@ urlpatterns = [
 		path('token/', TokenObtainPair.as_view(), name="token_obtain_pair"),
 		path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name="token_refresh"),
 
-		path('oauth/', init, name='oauth'),
-		path('callback/', Oauth2Callback, name='callback')
+		path('oauth/<int:node_pk>/', init, name='oauth'),
+		path('callback/<int:node_pk', Oauth2Callback, name='callback')
 	]

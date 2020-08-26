@@ -58,8 +58,8 @@ class Order(models.Model):
 	complete = models.BooleanField(default=False)
 	completed_time = models.DateTimeField(blank=True, null=True)
 
-	result = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(5)])
-	error_count = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(20)])
+	result = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(5)], null=True)
+	error_count = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(20)], default=0)
 	error_detail = models.CharField(max_length=255, blank=True)
 	last_edited_by = models.ForeignKey(CustomUser, blank=True, null=True, 
 	 								   related_name="last_edited_by", on_delete=models.PROTECT)

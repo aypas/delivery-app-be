@@ -8,7 +8,7 @@ test = unittest.TestCase()
 test.maxDiff = None
 sources = ['brandibble', 'chownow.com', 'delivery.com', 'gloriafood.com', 'grubhub.com', 'toasttab.com']
 
-scraper = Scrape(test=True)
+
 
 def make_fake_dict(body, _id):
 	return {'body': BeautifulSoup(body, 'html.parser'), 'email_id': _id.split('.')[0], 'err': 0}
@@ -16,7 +16,7 @@ def make_fake_dict(body, _id):
 def get_html_by_id(source):
 	return os.listdir(f"./html/{source}")
 
-def populate_ebs():
+def populate_ebs(scraper):
 	for source in sources:
 		files = get_html_by_id(source)
 		for file in files:
@@ -24,26 +24,23 @@ def populate_ebs():
 			scraper.GmailApi.emails_by_source[source].append(make_fake_dict(html.read(), file))
 			html.close()
 
-populate_ebs()
-scraper.delivery_scrape()
-scraper.chow_now_scrape()
-scraper.grubhub_scrape()
-scraper.brandibble_scrape()
-scraper.toasttab_scrape()
-scraper.gloriafood_scrape()
+def make_scraper_instance():
+	scraper = Scrape(test=True)
+	populate_ebs(scraper)
+	scraper.delivery_scrape()
+	scraper.chow_now_scrape()
+	scraper.grubhub_scrape()
+	scraper.brandibble_scrape()
+	scraper.toasttab_scrape()
+	scraper.gloriafood_scrape()
+	return scraper
 
 #asserts should be done here
-def test_keys():
+def test_keys(scraper):
 	errs = 0
 	lists = scraper.GmailApi.unpacked_ebs
 	for i in range(len(lists)):
-		#since i dont think good, im not sure
-		#if using range(i+1, len(lists)) covers 100% but im fairly sure it does
-		#if you want to be real sure though, test with range(len(lists)) in second loop
-		#both have passed as of 7/24 at 1am
 		for j in range(i+1, len(lists)):
-			if i == j:
-				continue
 			first = list(lists[i]['db_values'].keys())
 			second = list(lists[j]['db_values'].keys())
 			first.sort()
@@ -58,7 +55,7 @@ def test_keys():
 	else:
 		print("db_values keys test has failed. ", errs, " is the number of errors")
 
-def test_values():
+def test_values(scraper):
 	f = 0
 	for source in sources:
 		for i in scraper.GmailApi.emails_by_source[source]:
@@ -84,13 +81,14 @@ def test_values():
 	else:
 		print('failed, idk where')
 
-def eye_test():
+def eye_test(scraper):
 	#comment out individual scrapes to exclude them
 	for i in scraper.GmailApi.emails_by_source.keys():
 		for l in scraper.GmailApi.emails_by_source[i]:
 			print(l.get('db_values', None), i, '\n\n')
 
 if __name__ == "__main__":
-	eye_test()
-	test_keys()
-	test_values()
+	scraper = make_scraper_instance()
+	eye_test(scraper)
+	test_keys(scraper)
+	test_values(scraper)

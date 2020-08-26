@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 from corsheaders.defaults import default_headers
 
+
 load_dotenv()
 load_dotenv(dotenv_path=Path('.'))
 
@@ -60,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'delivery_app.middleware.middleware.PermissionsVerification'
 ]
 
 
@@ -79,8 +81,8 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(minutes=200)
 }
 
-CSRF_COOKIE_NAME = 'csrftoken'
-CSRF_TRUSTED_ORIGINS = [os.environ['TRUSTED_ORIGIN'],]
+#CSRF_COOKIE_NAME = 'XSRF-TOKEN'
+#CSRF_TRUSTED_ORIGINS = [os.environ['TRUSTED_ORIGIN'],]
 
 CORS_ORIGIN_ALLOW_ALL = True   #remove in production
 CORS_ALLOW_CREDENTIALS = True  #remove in production

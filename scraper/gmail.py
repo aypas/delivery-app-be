@@ -8,7 +8,7 @@ django.setup()
 from business_logic.models import Node
 
 logging.basicConfig(filename='scraper.log', filemode='a', 
-					level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s @ %(funcName)s from module %(module)s')
+					level=logging.ERROR, format='%(asctime)s %(levelname)s %(message)s @ %(funcName)s from module %(module)s')
 
 
 class GmailApi:
